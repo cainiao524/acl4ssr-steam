@@ -1,0 +1,57 @@
+name: Update Steam split rules
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 每天 UTC 03:17 自动检查一次上游
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-steam-split-rules
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Generate Steam rules
+        run: python scripts/generate_steam_rules.py
+
+      - name: Validate generated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s rules/SteamDownload.list
+          test -s rules/SteamWeb.list
+          grep -q 'steamcontent.com' rules/SteamDownload.list
+          grep -q 'steampipe.akamaized.net' rules/SteamDownload.list
+          grep -q 'steamcommunity.com' rules/SteamWeb.list
+          grep -q 'steampowered.com' rules/SteamWeb.list
+
+      - name: Commit only when rules changed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- rules/SteamDownload.list rules/SteamWeb.list; then
+            echo "上游没有产生分类变化，无需提交。"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -- rules/SteamDownload.list rules/SteamWeb.list
+          git commit -m "chore: update generated Steam split rules"
+          git push
