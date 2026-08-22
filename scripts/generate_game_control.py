@@ -9,9 +9,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 RULE_DIR = ROOT / "rules"
 REPORT_DIR = ROOT / "reports"
-OUT_CONFIG = ROOT / "ACL4SSR_Online_Full_GameControl.ini"
+OUT_CONFIG = ROOT / "ACL4SSR_Online_Full_GameControl_MultiMode.ini"
 
-ACL4SSR_FULL = "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full.ini"
+ACL4SSR_FULL = "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_MultiMode.ini"
 ACL4SSR_GAME_DOWNLOAD = "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/GameDownload.list"
 BM = "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash"
 
@@ -305,17 +305,17 @@ def build_full_config(base: str) -> str:
 
         # 保留官方游戏平台策略组选项，并在其前后插入新策略组。
         if stripped.startswith("custom_proxy_group=🎮 游戏平台`"):
-            result.append("custom_proxy_group=🎮 游戏下载`select`[]DIRECT`[]🚀 节点选择`[]♻️ 自动选择`[]🇭🇰 香港节点`[]🇨🇳 台湾节点`[]🇸🇬 狮城节点`[]🇯🇵 日本节点`[]🇺🇲 美国节点`[]🇰🇷 韩国节点`[]🚀 手动切换")
-            result.append("custom_proxy_group=🎮 游戏平台`select`[]DIRECT`[]🚀 节点选择`[]♻️ 自动选择`[]🇺🇲 美国节点`[]🇭🇰 香港节点`[]🇨🇳 台湾节点`[]🇸🇬 狮城节点`[]🇯🇵 日本节点`[]🇰🇷 韩国节点`[]🚀 手动切换")
-            result.append("custom_proxy_group=🎮 Steam 商店/社区`select`[]🚀 节点选择`[]♻️ 自动选择`[]🇭🇰 香港节点`[]🇨🇳 台湾节点`[]🇸🇬 狮城节点`[]🇯🇵 日本节点`[]🇺🇲 美国节点`[]🇰🇷 韩国节点`[]🚀 手动切换`[]DIRECT")
+            result.append("custom_proxy_group=🎮 游戏下载`select`[]DIRECT`[]🚀 节点选择`[]♻️ 自动选择`[]🔯 故障转移`[]🔮 负载均衡`[]🇭🇰 香港节点`[]🇨🇳 台湾节点`[]🇸🇬 狮城节点`[]🇯🇵 日本节点`[]🇺🇲 美国节点`[]🇰🇷 韩国节点`[]🚀 手动切换")
+            result.append("custom_proxy_group=🎮 游戏平台`select`[]DIRECT`[]🚀 节点选择`[]♻️ 自动选择`[]🔯 故障转移`[]🔮 负载均衡`[]🇺🇲 美国节点`[]🇭🇰 香港节点`[]🇨🇳 台湾节点`[]🇸🇬 狮城节点`[]🇯🇵 日本节点`[]🇰🇷 韩国节点`[]🚀 手动切换")
+            result.append("custom_proxy_group=🎮 Steam 商店/社区`select`[]🚀 节点选择`[]♻️ 自动选择`[]🔯 故障转移`[]🔮 负载均衡`[]🇭🇰 香港节点`[]🇨🇳 台湾节点`[]🇸🇬 狮城节点`[]🇯🇵 日本节点`[]🇺🇲 美国节点`[]🇰🇷 韩国节点`[]🚀 手动切换`[]DIRECT")
             inserted_groups = True
             continue
 
         result.append(line)
 
         if stripped == ";acl4SSR规则":
-            result.append(";GameControl 自动生成版：保留 ACL4SSR Full，其余仅替换游戏平台分流")
-            result.append(";旧版 ACL4SSR_Online_Full_SteamSplit.ini 保留不动，可随时回滚")
+            result.append(";GameControl MultiMode 自动生成版：以 ACL4SSR 官方 Full_MultiMode 为底，仅替换游戏平台分流")
+            result.append(";仓库仅保留 ACL4SSR_Online_Full_GameControl_MultiMode.ini 一个远程配置")
 
     if not inserted_rules or removed_platform_rules < 1:
         raise RuntimeError("未找到 ACL4SSR 官方游戏平台 ruleset 锚点，拒绝生成")

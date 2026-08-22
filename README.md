@@ -1,24 +1,34 @@
-# ACL4SSR Steam 自动双分流
+# ACL4SSR GameControl MultiMode
 
-这个版本不手工维护 Steam 域名。
+本仓库只维护一个对外远程配置：
 
-- 上游：blackmatrix7/ios_rule_script
-- 输入：Steam.list + SteamCN.list
-- 输出：
-  - rules/SteamDownload.list
-  - rules/SteamWeb.list
-- 更新：GitHub Actions 每天自动检查
-- 安全：上游为空、数量异常、关键规则消失或分类异常时，生成脚本直接失败，不覆盖线上规则
+`ACL4SSR_Online_Full_GameControl_MultiMode.ini`
 
-当前首版生成：
-- SteamDownload.list: 43 条
-- SteamWeb.list: 28 条
+它以 ACL4SSR 官方 `ACL4SSR_Online_Full_MultiMode.ini` 为底板，保留官方多模式逻辑：
 
-ACL4SSR 远程配置引用顺序：
+- `♻️ 自动选择`：url-test
+- `🔯 故障转移`：fallback `.*`
+- `🔮 负载均衡`：load-balance `.*`
 
-```ini
-ruleset=🎮 Steam 登录/下载,https://raw.githubusercontent.com/cainiao524/acl4ssr-steam/main/rules/SteamDownload.list
-ruleset=🎮 Steam 商店/社区,https://raw.githubusercontent.com/cainiao524/acl4ssr-steam/main/rules/SteamWeb.list
-```
+本仓库只额外加入游戏平台三分流：
 
-下载组必须在网页组之前，以保证 `cm.steampowered.com` 等更具体规则优先于 `steampowered.com`。
+- `🎮 游戏下载`：默认 `DIRECT`
+- `🎮 Steam 商店/社区`：默认 `🚀 节点选择`
+- `🎮 游戏平台`：默认 `DIRECT`
+
+规则优先级：
+
+`🎮 游戏下载` → `🎮 Steam 商店/社区` → `🎮 游戏平台` → 其余 ACL4SSR 规则
+
+唯一远程配置地址：
+
+`https://raw.githubusercontent.com/cainiao524/acl4ssr-steam/main/ACL4SSR_Online_Full_GameControl_MultiMode.ini`
+
+内部辅助规则：
+
+- `rules/GameDownload.list`
+- `rules/GameSteamWeb.list`
+
+这两个 `.list` 是唯一 INI 的内部依赖，不是第二套远程配置。
+
+GitHub Actions 每天自动从 ACL4SSR / blackmatrix7 上游更新并做安全校验。

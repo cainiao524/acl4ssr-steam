@@ -1,69 +1,46 @@
-# ACL4SSR Full GameControl
+# GameControl MultiMode
 
-这是在原有 `ACL4SSR_Online_Full_SteamSplit.ini` 之外新增的 **全游戏平台控制版**。
+唯一对外配置：
 
-## 保留旧版
+`ACL4SSR_Online_Full_GameControl_MultiMode.ini`
 
-旧文件完全不需要删除：
+## 基础
 
-```text
-ACL4SSR_Online_Full_SteamSplit.ini
-```
+底板使用 ACL4SSR 官方：
 
-旧版仍可作为稳定回滚入口。
+`ACL4SSR_Online_Full_MultiMode.ini`
 
-## 新版配置地址
+官方多模式保持原样：
 
-推送本目录文件到仓库 `main` 后使用：
+- `custom_proxy_group=🔯 故障转移` 使用 `fallback` + `.*`
+- `custom_proxy_group=🔮 负载均衡` 使用 `load-balance` + `.*`
+- 不增加国家锁定故障转移组
 
-```text
-https://raw.githubusercontent.com/cainiao524/acl4ssr-steam/main/ACL4SSR_Online_Full_GameControl.ini
-```
+## 游戏分流
 
-## 策略组
+- `🎮 游戏下载`：默认 DIRECT
+- `🎮 Steam 商店/社区`：默认节点选择
+- `🎮 游戏平台`：默认 DIRECT
 
-- `🎮 游戏下载`：默认 `DIRECT`，统一控制 Steam / Epic / EA / Battle.net / Ubisoft / Xbox / Rockstar / GOG / Riot 等明确下载 CDN。
-- `🎮 Steam 商店/社区`：默认 `🚀 节点选择`。
-- `🎮 游戏平台`：默认 `DIRECT`，承接登录、客户端服务、商店/API、联机基础设施等不应粗暴归为下载的流量。
+规则顺序固定：
 
-## 规则顺序
+`游戏下载` → `Steam 商店/社区` → `游戏平台`
 
-```text
-🎮 游戏下载
-→ 🎮 Steam 商店/社区
-→ 🎮 游戏平台
-→ 其余 ACL4SSR Full 规则
-```
+## 安全
 
-Clash/Mihomo 按从上到下第一个命中规则执行，因此顺序不能交换。
+`GameDownload.list` 继续排除：
 
-## 安全策略
+- `dl.delivery.mp.microsoft.com`
+- `tlu.dl.delivery.mp.microsoft.com`
 
-`GameDownload.list` 使用保守模式。明确排除：
-
-```text
-dl.delivery.mp.microsoft.com
-tlu.dl.delivery.mp.microsoft.com
-```
-
-这两个域可能与 Windows Update / Microsoft Store 通用下载共用，避免用户将 `🎮 游戏下载` 切换到代理时误把系统下载一起代理。
+避免把 Windows Update / Microsoft Store 的共享下载流量错误归类为游戏下载。
 
 ## 自动更新
 
-新工作流：
+唯一工作流：
 
-```text
-.github/workflows/update-game-control.yml
-```
+`.github/workflows/update-game-control.yml`
 
-每天自动执行：
+唯一生成器：
 
-1. 校验 blackmatrix7 各游戏平台上游；
-2. 生成安全的 `rules/GameDownload.list`；
-3. 生成 `rules/GameSteamWeb.list`；
-4. 获取 ACL4SSR 官方最新 `ACL4SSR_Online_Full.ini`；
-5. 仅替换游戏平台部分，生成 `ACL4SSR_Online_Full_GameControl.ini`；
-6. 校验危险宽域、关键下载 CDN 和规则顺序；
-7. 有变化才自动提交。
-
-旧的 `update-steam-rules.yml` 不需要删除，两套版本可以并存。
+`scripts/generate_game_control.py`

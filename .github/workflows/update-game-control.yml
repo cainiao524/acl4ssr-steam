@@ -1,16 +1,15 @@
-name: Update GameControl rules
+name: Update GameControl MultiMode rules
 
 on:
   workflow_dispatch:
   schedule:
-    # 每天 UTC 03:47；与旧 SteamSplit 工作流错开 30 分钟
     - cron: "47 3 * * *"
 
 permissions:
   contents: write
 
 concurrency:
-  group: update-game-control-rules
+  group: update-game-control-multimode-rules
   cancel-in-progress: false
 
 jobs:
@@ -25,16 +24,19 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Generate GameControl
+      - name: Generate GameControl MultiMode
         run: python scripts/generate_game_control.py
 
       - name: Validate generated files
         shell: bash
         run: |
           set -euo pipefail
+
+          CFG="ACL4SSR_Online_Full_GameControl_MultiMode.ini"
+
           test -s rules/GameDownload.list
           test -s rules/GameSteamWeb.list
-          test -s ACL4SSR_Online_Full_GameControl.ini
+          test -s "$CFG"
           test -s reports/game-rules.md
 
           grep -q 'steampipe.akamaized.net' rules/GameDownload.list
@@ -42,10 +44,23 @@ jobs:
           grep -q 'packagespc.xboxlive.com' rules/GameDownload.list
           grep -q 'cdn.ubi.com' rules/GameDownload.list
           grep -q 'dyn.riotcdn.net' rules/GameDownload.list
+
           grep -q 'steamcommunity.com' rules/GameSteamWeb.list
           grep -q 'steampowered.com' rules/GameSteamWeb.list
-          grep -q '🎮 游戏下载' ACL4SSR_Online_Full_GameControl.ini
-          grep -q '🎮 Steam 商店/社区' ACL4SSR_Online_Full_GameControl.ini
+
+          grep -q '🎮 游戏下载' "$CFG"
+          grep -q '🎮 Steam 商店/社区' "$CFG"
+          grep -q '🎮 游戏平台' "$CFG"
+
+          # 必须保留 ACL4SSR Full_MultiMode 官方多模式逻辑：
+          # 全局 fallback .*，不做国家锁定修改。
+          grep -Fq 'custom_proxy_group=🔯 故障转移`fallback`.*`http://www.gstatic.com/generate_204`300,,50' "$CFG"
+          grep -Fq 'custom_proxy_group=🔮 负载均衡`load-balance`.*`http://www.gstatic.com/generate_204`300,,50' "$CFG"
+
+          if grep -Eq '🔯 (香港|台湾|新加坡|日本|美国|韩国)故障转移' "$CFG"; then
+            echo '危险：检测到国家锁定故障转移，不符合官方 Full_MultiMode 设计' >&2
+            exit 1
+          fi
 
           if grep -Eq '^(DOMAIN|DOMAIN-SUFFIX),((tlu\.)?dl\.delivery\.mp\.microsoft\.com)(,|$)' rules/GameDownload.list; then
             echo '危险：微软共享下载域被放入 GameDownload' >&2
@@ -60,17 +75,17 @@ jobs:
           FILES=(
             rules/GameDownload.list
             rules/GameSteamWeb.list
-            ACL4SSR_Online_Full_GameControl.ini
+            ACL4SSR_Online_Full_GameControl_MultiMode.ini
             reports/game-rules.md
           )
 
           if git diff --quiet -- "${FILES[@]}"; then
-            echo "GameControl 上游没有产生变化，无需提交。"
+            echo "GameControl MultiMode 上游没有产生变化，无需提交。"
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- "${FILES[@]}"
-          git commit -m "chore: update GameControl rules"
+          git commit -m "chore: update GameControl MultiMode rules"
           git push
