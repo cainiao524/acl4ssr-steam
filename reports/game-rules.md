@@ -1,23 +1,28 @@
-# GameControl 规则报告（初始基线）
+# GameControl 规则报告
 
-初始基线：2026-08-22。
+> 此文件由 `scripts/generate_game_control.py` 自动生成。
 
-## 当前输出
+| 数据源 | 规则数 |
+| --- | ---: |
+| GameDownload | 39 |
+| GameDownloadCN | 16 |
+| Steam | 54 |
+| SteamCN | 17 |
+| Epic | 15 |
+| EA | 165 |
+| Blizzard | 62 |
+| UBI | 5 |
+| Xbox | 42 |
+| PlayStation | 4 |
+| Nintendo | 126 |
+| Riot | 55 |
+| Rockstar | 5 |
+| Gog | 4 |
+| Garena | 15 |
 
-- `GameDownload.list`：61 个唯一规则值。
-- `GameSteamWeb.list`：24 个唯一规则值。
-- `ACL4SSR_Online_Full_GameControl.ini`：13 个游戏平台上游规则集。
+## 最终输出
 
-## 平台覆盖
-
-Steam / SteamCN / Epic / EA / Battle.net / Ubisoft / Xbox / PlayStation / Nintendo / Riot / Rockstar / GOG / Garena。
-
-## 安全处理
-
-- 游戏下载组默认 `DIRECT`。
-- Steam 商店/社区默认 `🚀 节点选择`。
-- 游戏平台默认 `DIRECT`。
-- 微软共享系统下载域不进入 `GameDownload.list`，避免切换游戏下载策略时误影响 Windows Update / Microsoft Store 通用下载。
-- `fanatical.com`、`humblebundle.com`、`steamunlocked.net` 不进入新版 Steam 官方网页规则。
-
-后续 GitHub Actions 会由 `scripts/generate_game_control.py` 自动重写本报告。
+- `GameDownload.list`: **76** 条
+- `GameSteamWeb.list`: **28** 条
+- 平台覆盖：Steam / SteamCN / Epic / EA / Blizzard / Ubisoft / Xbox / PlayStation / Nintendo / Riot / Rockstar / GOG / Garena
+- 安全排除：`dl.delivery.mp.microsoft.com`、`tlu.dl.delivery.mp.microsoft.com` 不进入游戏下载组，避免把 Windows Update / Microsoft Store 通用下载错误归类。
