@@ -1,0 +1,76 @@
+name: Update GameControl rules
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 每天 UTC 03:47；与旧 SteamSplit 工作流错开 30 分钟
+    - cron: "47 3 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-game-control-rules
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Generate GameControl
+        run: python scripts/generate_game_control.py
+
+      - name: Validate generated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s rules/GameDownload.list
+          test -s rules/GameSteamWeb.list
+          test -s ACL4SSR_Online_Full_GameControl.ini
+          test -s reports/game-rules.md
+
+          grep -q 'steampipe.akamaized.net' rules/GameDownload.list
+          grep -q 'download.epicgames.com' rules/GameDownload.list
+          grep -q 'packagespc.xboxlive.com' rules/GameDownload.list
+          grep -q 'cdn.ubi.com' rules/GameDownload.list
+          grep -q 'dyn.riotcdn.net' rules/GameDownload.list
+          grep -q 'steamcommunity.com' rules/GameSteamWeb.list
+          grep -q 'steampowered.com' rules/GameSteamWeb.list
+          grep -q '🎮 游戏下载' ACL4SSR_Online_Full_GameControl.ini
+          grep -q '🎮 Steam 商店/社区' ACL4SSR_Online_Full_GameControl.ini
+
+          if grep -Eq '^(DOMAIN|DOMAIN-SUFFIX),((tlu\.)?dl\.delivery\.mp\.microsoft\.com)(,|$)' rules/GameDownload.list; then
+            echo '危险：微软共享下载域被放入 GameDownload' >&2
+            exit 1
+          fi
+
+      - name: Commit only when GameControl changed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          FILES=(
+            rules/GameDownload.list
+            rules/GameSteamWeb.list
+            ACL4SSR_Online_Full_GameControl.ini
+            reports/game-rules.md
+          )
+
+          if git diff --quiet -- "${FILES[@]}"; then
+            echo "GameControl 上游没有产生变化，无需提交。"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "${FILES[@]}"
+          git commit -m "chore: update GameControl rules"
+          git push

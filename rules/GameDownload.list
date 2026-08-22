@@ -1,0 +1,90 @@
+# NAME: GameDownload
+# PURPOSE: 安全的全游戏平台下载/更新 CDN 分流
+# BASELINE: 2026-08-22
+# SOURCES: blackmatrix7 GameDownload + GameDownloadCN + ACL4SSR + Steam 补充
+# SAFETY: 已排除微软共享系统下载域，避免误伤 Windows Update / Microsoft Store。
+
+# ===== Xbox / Microsoft Gaming =====
+DOMAIN,assets1.xboxlive.com
+DOMAIN,assets2.xboxlive.com
+DOMAIN,assets1.xboxlive.cn
+DOMAIN,assets2.xboxlive.cn
+DOMAIN,packagespc.xboxlive.com
+DOMAIN,xvcf1.xboxlive.com
+DOMAIN,xvcf2.xboxlive.com
+
+# ===== Blizzard / Battle.net =====
+DOMAIN,blizzard.gcdn.cloudn.co.kr
+DOMAIN,blzddist1-a.akamaihd.net
+DOMAIN,blzddistkr1-a.akamaihd.net
+DOMAIN,eu.cdn.blizzard.com
+DOMAIN,kr.cdn.blizzard.com
+DOMAIN,level3.blizzard.com
+DOMAIN,us.cdn.blizzard.com
+DOMAIN-SUFFIX,pdl.wow.battlenet.com.cn
+
+# ===== Bethesda =====
+DOMAIN,content.cdp.bethesda.net
+DOMAIN,download.cdp.bethesda.net
+
+# ===== EA / Origin =====
+DOMAIN,download.dm.origin.com
+DOMAIN,origin-a.akamaihd.net
+DOMAIN,ssl-lvlt.cdn.ea.com
+
+# ===== Epic Games =====
+DOMAIN,download.epicgames.com
+DOMAIN,download2.epicgames.com
+DOMAIN,download3.epicgames.com
+DOMAIN,download4.epicgames.com
+DOMAIN,epicgames-download1.akamaized.net
+DOMAIN,epicgames-download1-1251447533.file.myqcloud.com
+DOMAIN,fastly-download.epicgames.com
+
+# ===== Ubisoft =====
+DOMAIN,uplaypc-s-ubisoft.cdn.ubionline.com.cn
+DOMAIN-SUFFIX,cdn.ubi.com
+
+# ===== Rockstar =====
+DOMAIN,gamedownloads-rockstargames-com.akamaized.net
+
+# ===== GOG =====
+DOMAIN,gog-cdn-lumen.secure2.footprint.net
+
+# ===== Riot =====
+DOMAIN-SUFFIX,dyn.riotcdn.net
+
+# ===== Hikari Field =====
+DOMAIN,client.hikarifield.co.jp
+DOMAIN,download.hikarifield.co.jp
+
+# ===== Steam global CDN =====
+DOMAIN,edge.steam-dns.top.comcast.net
+DOMAIN,steam.eca.qtlglb.com
+DOMAIN,steam.naeu.qtlglb.com
+DOMAIN,steam.ru.qtlglb.com
+DOMAIN,steampipe-kr.akamaized.net
+DOMAIN,steampipe-partner.akamaized.net
+DOMAIN,steampipe.akamaized.net
+DOMAIN,steamusercontent-a.akamaihd.net
+DOMAIN-SUFFIX,steamcontent.com
+
+# ===== Steam China / ISP CDN =====
+DOMAIN,cdn-ali.content.steamchina.com
+DOMAIN,cdn-qc.content.steamchina.com
+DOMAIN,cdn-ws.content.steamchina.com
+DOMAIN,dl.steam.clngaa.com
+DOMAIN,dl.steam.ksyna.com
+DOMAIN,st.dl.bscstorage.net
+DOMAIN,st.dl.eccdnx.com
+DOMAIN,st.dl.pinyuncloud.com
+DOMAIN,steampipe.steamcontent.tnkjmec.com
+DOMAIN,trts.baishancdnx.cn
+DOMAIN,xz.pphimalayanrt.com
+DOMAIN-SUFFIX,steam.apac.qtlglb.com
+DOMAIN-SUFFIX,steam.cdn.on.net
+DOMAIN-SUFFIX,steam.cdn.orcon.net.nz
+DOMAIN-SUFFIX,steam.cdn.slingshot.co.nz
+DOMAIN-SUFFIX,steam.cdn.webra.ru
+DOMAIN-SUFFIX,steamcontent.tnkjmec.com
+DOMAIN-SUFFIX,f3b7q2p3.ssl.hwcdn.net

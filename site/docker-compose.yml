@@ -1,0 +1,46 @@
+services:
+  subconverter-ng:
+    image: ghcr.io/jungley8/subconverter-ng:latest
+    container_name: subconverter-ng
+    restart: unless-stopped
+    ports:
+      - "25500:25500"
+    environment:
+      TZ: Asia/Shanghai
+
+  subweb:
+    image: node:22-alpine
+    container_name: subweb
+    restart: unless-stopped
+    ports:
+      - "18088:80"
+    environment:
+      TZ: Asia/Shanghai
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        apk add --no-cache git
+
+        if [ ! -d /app/.git ]; then
+          rm -rf /app/*
+          git clone --depth=1 https://github.com/cmliu/SUBWEB.git /app
+        else
+          cd /app
+          git fetch origin
+          git reset --hard origin/main
+        fi
+
+        cd /app
+        npm install
+        npm run build
+        npm install -g serve
+        exec serve -s /app/dist -l 80
+    volumes:
+      - subweb_source:/app
+    depends_on:
+      - subconverter-ng
+
+volumes:
+  subweb_source:
