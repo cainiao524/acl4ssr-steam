@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.request import Request, urlopen
 import sys
@@ -125,6 +126,7 @@ PLATFORM_RULE_URLS = [
 ]
 
 ALLOWED = {"DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "IP-CIDR", "IP-CIDR6"}
+FETCH_WORKERS = 8
 
 
 def fetch(url: str) -> str:
@@ -137,6 +139,13 @@ def fetch(url: str) -> str:
     if not text.strip():
         raise RuntimeError(f"上游返回空文件: {url}")
     return text
+
+
+def fetch_sources(sources: OrderedDict[str, str]) -> dict[str, str]:
+    """Fetch independent upstream files concurrently, preserving source order."""
+    with ThreadPoolExecutor(max_workers=min(FETCH_WORKERS, len(sources))) as pool:
+        futures = {name: pool.submit(fetch, url) for name, url in sources.items()}
+        return {name: futures[name].result() for name in sources}
 
 
 def parse(text: str) -> list[str]:
@@ -377,20 +386,27 @@ def report(source_rules: dict[str, list[str]], download: list[str], web: list[st
 
 
 def main() -> int:
+    upstream_urls = OrderedDict([
+        ("ACL4SSRFull", ACL4SSR_FULL),
+        ("ACL4SSRGameDownload", ACL4SSR_GAME_DOWNLOAD),
+        *SOURCES.items(),
+    ])
+    fetched = fetch_sources(upstream_urls)
+
     source_rules: dict[str, list[str]] = {}
-    for name, url in SOURCES.items():
-        rules = parse(fetch(url))
+    for name in SOURCES:
+        rules = parse(fetched[name])
         validate_source(name, rules)
         source_rules[name] = rules
         print(f"{name}: {len(rules)}")
 
-    acl_download = parse(fetch(ACL4SSR_GAME_DOWNLOAD))
+    acl_download = parse(fetched["ACL4SSRGameDownload"])
     if len(acl_download) < 15:
         raise RuntimeError(f"ACL4SSR GameDownload 异常：仅 {len(acl_download)} 条")
 
     download = build_download(source_rules, acl_download)
     steam_web = build_steam_web(source_rules, download)
-    full = build_full_config(fetch(ACL4SSR_FULL))
+    full = build_full_config(fetched["ACL4SSRFull"])
 
     RULE_DIR.mkdir(parents=True, exist_ok=True)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
